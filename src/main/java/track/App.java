@@ -1,67 +1,72 @@
 package track;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
+
 
 public class App {
 
     public static void main(String[] args) {
+        // 標準入力の読み取り
         String[] lines = getStdin();
-        int currentIndex = 0;
 
-        // テンプレート情報の読み込み
-        int n = Integer.parseInt(lines[currentIndex++].trim());
-        String[] template = lines[currentIndex++].trim().split(" ");
+        // 1行目：テンプレートの文字列数
+        int N = Integer.parseInt(lines[0].trim());
 
-        // 取引先の数の読み込み
-        int numClients = Integer.parseInt(lines[currentIndex++].trim());
+        // 2行目：テンプレート
+        String[] templateWords = lines[1].trim().split(" ");
 
-        // 各取引先ごとにメール生成
-        for (int i = 0; i < numClients; i++) {
-            int numEntries = Integer.parseInt(lines[currentIndex++].trim());
+        // 3行目：取引先の数
+        int numberOfClients = Integer.parseInt(lines[2].trim());
 
-            // 取引先の情報をマッピング
-            Map<String, String> replacements = new HashMap<>();
-            for (int j = 0; j < numEntries; j++) {
-                String[] data = lines[currentIndex++].trim().split(" ");
-                replacements.put(data[0], data[1]);
+        // 各取引先データの処理
+        int lineIndex = 3; // 現在の行インデックス
+        for (int i = 0; i < numberOfClients; i++) {
+            // 取引先の情報数
+            int numberOfInfo = Integer.parseInt(lines[lineIndex].trim());
+            lineIndex++;
+
+            // 取引先情報をMapに格納
+            Map<String, String> clientData = new HashMap<>();
+            for (int j = 0; j < numberOfInfo; j++) {
+                String[] info = lines[lineIndex].trim().split(" ");
+                clientData.put(info[0], info[1]);
+                lineIndex++;
             }
 
-            // メールの文章を生成
-            StringBuilder result = new StringBuilder();
-            boolean dataMissing = false;
-            for (String word : template) {
+            // テンプレートをコピーして置換処理
+            StringBuilder email = new StringBuilder();
+            boolean allReplacementsFound = true;
+            for (String word : templateWords) {
                 if (word.startsWith("#")) {
-                    if (replacements.containsKey(word)) {
-                        result.append(replacements.get(word)).append(" ");
+                    if (clientData.containsKey(word)) {
+                        email.append(clientData.get(word)).append(" ");
                     } else {
-                        dataMissing = true;
+                        allReplacementsFound = false;
                         break;
                     }
                 } else {
-                    result.append(word).append(" ");
+                    email.append(word).append(" ");
                 }
             }
 
-            // 結果の出力
-            if (dataMissing) {
-                System.out.println("Error: Lack of data");
+            // 出力処理
+            if (allReplacementsFound) {
+                System.out.println(email.toString().trim());
             } else {
-                System.out.println(result.toString().trim());
+                System.out.println("Error: Lack of data");
             }
         }
     }
 
-    // 標準入力からデータを読み込むメソッド
+    // 標準入力の読み込みメソッド
     private static String[] getStdin() {
         Scanner scanner = new Scanner(System.in);
         ArrayList<String> lines = new ArrayList<>();
-        while (scanner.hasNext()) {
+        while (scanner.hasNextLine()) {
             lines.add(scanner.nextLine());
         }
-        return lines.toArray(new String[0]);
+        return lines.toArray(new String[lines.size()]);
     }
-
 }
